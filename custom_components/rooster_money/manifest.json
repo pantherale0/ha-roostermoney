@@ -1,0 +1,10 @@
+{
+    "domain": "rooster_money",
+    "name": "Natwest Rooster Money",
+    "codeowners": ["pantherale0"],
+    "dependencies": ["pyroostermoney"],
+    "documentation": "https://github.com/pantherale0/ha-roostermoney",
+    "iot_class": "local_polling",
+    "requirements": [],
+    "version": "0.0.1"
+}
