@@ -44,7 +44,7 @@ class RoosterChildEntity(Entity):
     def device_info(self):
         """Return device info."""
         return DeviceInfo(
-            identifiers={(DOMAIN, self.unique_id)},
+            identifiers={(DOMAIN, f"roostermoney_{self._child.user_id}")},
             manufacturer="Rooster Money",
             name=str(self._child.first_name),
             sw_version=MOBILE_APP_VERSION,
