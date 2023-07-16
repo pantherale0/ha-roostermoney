@@ -7,9 +7,9 @@
     "documentation": "https://www.home-assistant.io/integrations/rooster_money",
     "homekit": {},
     "iot_class": "cloud_polling",
-    "requirements": ["pyroostermoney==0.1.5"],
+    "requirements": ["pyroostermoney==0.1.6"],
     "ssdp": [],
     "zeroconf": [],
-    "version": "0.1.5"
+    "version": "0.1.6"
   }
   
