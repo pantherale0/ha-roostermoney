@@ -1,7 +1,9 @@
 {
   "name": "Rooster Money",
-  "content_in_root": false,
+  "filename": "rooster_money.zip",
+  "hide_default_branch": true,
+  "homeassistant": "2023.3.0",
   "render_readme": false,
-  "homeassistant": "2023.1.0",
+  "zip_release": true,
   "country": ["GB"]
 }
