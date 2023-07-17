@@ -3,18 +3,20 @@
       "step": {
         "user": {
           "data": {
-            "username": "[%key:common::config_flow::data::username%]",
-            "password": "[%key:common::config_flow::data::password%]"
+            "username": "Username",
+            "password": "Password",
+            "update_interval": "Update interval",
+            "use_native_updater": "Use internal updater"
           }
         }
       },
       "error": {
-        "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
-        "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
-        "unknown": "[%key:common::config_flow::error::unknown%]"
+        "cannot_connect": "Unable to connect",
+        "invalid_auth": "Invalid username and/or password",
+        "unknown": "Unknown error"
       },
       "abort": {
-        "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+        "already_configured": "Already configured"
       }
     }
   }

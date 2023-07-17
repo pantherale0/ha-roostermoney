@@ -4,13 +4,13 @@ from __future__ import annotations
 import logging
 
 from pyroostermoney import RoosterMoney
-from pyroostermoney.child import ChildAccount
+from pyroostermoney.child import ChildAccount, StandingOrder
 from pyroostermoney.const import MOBILE_APP_VERSION
 from pyroostermoney.family_account import FamilyAccount
 
 import homeassistant.helpers.device_registry as dr
 from homeassistant.helpers.entity import DeviceInfo, Entity
-
+from homeassistant.core import ServiceResponse
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -19,7 +19,6 @@ _LOGGER = logging.getLogger(__name__)
 class RoosterChildEntity(Entity):
     """Base class for Rooster Money Child Entities."""
 
-    _attr_should_poll = True
     _attr_has_entity_name = True
 
     def __init__(
@@ -29,6 +28,7 @@ class RoosterChildEntity(Entity):
         self._session = session
         self._child: ChildAccount = account
         self._entity_id = entity_id
+        self._attr_should_poll = False if session.use_updater else True
 
     async def async_update(self) -> bool:
         """Update the entity data."""
@@ -41,6 +41,10 @@ class RoosterChildEntity(Entity):
         return f"roostermoney_{self._child.user_id}_{self._entity_id}"
 
     @property
+    def entity_picture(self) -> str | None:
+        return self._child.profile_image
+
+    @property
     def device_info(self):
         """Return device info."""
         return DeviceInfo(
@@ -51,11 +55,44 @@ class RoosterChildEntity(Entity):
             entry_type=dr.DeviceEntryType.SERVICE,
         )
 
+    async def async_create_standing_order(self, amount, day, frequency, tag, title):
+        """Service to create a standing order."""
+        standing_order = StandingOrder(
+            amount=amount,
+            day=day,
+            frequency=frequency,
+            active=True,
+            tag=tag,
+            title=title,
+            regular_id=None,
+        )
+        await self._child.create_standing_order(standing_order)
+
+    async def async_delete_standing_order(self, regular_id: str):
+        """Deletes a standing order according to its ID"""
+        for regular in self._child.standing_orders:
+            if regular.regular_id == regular_id:
+                await self._child.delete_standing_order(regular)
+                break
+
+    async def async_get_standing_orders(self) -> ServiceResponse:
+        """Gets all standing orders."""
+        return {
+            "regulars": [
+                {
+                    "amount": regular.amount,
+                    "title": regular.title,
+                    "id": regular.regular_id,
+                    "tag": regular.tag,
+                }
+                for regular in self._child.standing_orders
+            ]
+        }
+
 
 class RoosterFamilyEntity(Entity):
     """Base class for Rooster Family Account Entities."""
 
-    _attr_should_poll = True
     _attr_has_entity_name = True
 
     def __init__(
@@ -65,6 +102,7 @@ class RoosterFamilyEntity(Entity):
         self._session = session
         self._account: FamilyAccount = account
         self._attr = attr
+        self._attr_should_poll = False if session.use_updater else True
 
     async def async_update(self) -> bool:
         """Update the entity data."""

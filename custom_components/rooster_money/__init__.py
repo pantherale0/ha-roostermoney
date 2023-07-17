@@ -4,11 +4,17 @@ from __future__ import annotations
 import logging
 
 from pyroostermoney import RoosterMoney
+from pyroostermoney.child import StandingOrder
 from pyroostermoney.exceptions import InvalidAuthError
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import (
+    HomeAssistant,
+    ServiceCall,
+    ServiceResponse,
+    SupportsResponse,
+)
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 
 from .const import DOMAIN
@@ -22,7 +28,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Natwest Rooster Money from a config entry."""
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = RoosterMoney(
-        entry.data["username"], entry.data["password"]
+        username=entry.data["username"],
+        password=entry.data["password"],
+        use_updater=entry.data.get("use_native_updater", True),
+        update_interval=entry.data.get("update_interval", 60),
     )
     try:
         await hass.data[DOMAIN][entry.entry_id].async_login()

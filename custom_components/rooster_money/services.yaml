@@ -1,0 +1,58 @@
+# Create Standing Order
+create_standing_order:
+  target:
+    entity:
+      integration: rooster_money
+  fields:
+    amount:
+      required: True
+      selector:
+        number:
+          step: 0.1
+          unit_of_measurement: GBP
+          mode: box
+    day:
+      required: False
+      selector:
+        select:
+          options:
+            - Monday
+            - Tuesday
+            - Wednesday
+            - Thursday
+            - Friday
+          mode: dropdown
+    frequency:
+      required: True
+      selector:
+        select:
+          options:
+            - Weekly
+            - Monthly
+            - Daily
+    tag:
+      required: True
+      selector:
+        select:
+          options:
+            - Other
+            - Home
+    title:
+      required: True
+      selector:
+        text:
+          multiline: False
+delete_standing_order:
+  target:
+    entity:
+      integration: rooster_money
+  fields:
+    regular_id:
+      required: True
+      selector:
+        text:
+          multiline: False
+get_standing_orders:
+  target:
+    entity:
+      integration: rooster_money
