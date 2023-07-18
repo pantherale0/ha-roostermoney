@@ -56,3 +56,15 @@ get_standing_orders:
   target:
     entity:
       integration: rooster_money
+set_job_completed:
+  target:
+    entity:
+      integration: rooster_money
+      domain: calendar
+  fields:
+    job_id:
+      required: True
+      selector:
+        number:
+          step: 1
+          mode: box

@@ -62,4 +62,9 @@ ENTITY_SERVICES = {
         "function": "async_get_standing_orders",
         "required_features": None,
     },
+    "set_job_completed": {
+        "schema": {vol.Required("job_id"): int},
+        "function": "async_set_job_completed",
+        "required_features": None,
+    },
 }
