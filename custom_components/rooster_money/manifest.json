@@ -1,15 +1,14 @@
 {
-    "domain": "rooster_money",
-    "name": "Natwest Rooster Money",
-    "codeowners": ["@pantherale0"],
-    "config_flow": true,
-    "dependencies": [],
-    "documentation": "https://www.home-assistant.io/integrations/rooster_money",
-    "homekit": {},
-    "iot_class": "cloud_polling",
-    "requirements": ["pyroostermoney==0.2.1", "pytz"],
-    "ssdp": [],
-    "zeroconf": [],
-    "version": "0.2.1"
-  }
-  
+  "domain": "rooster_money",
+  "name": "Natwest Rooster Money",
+  "codeowners": ["@pantherale0"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://www.home-assistant.io/integrations/rooster_money",
+  "homekit": {},
+  "iot_class": "cloud_polling",
+  "requirements": ["pyroostermoney==0.2.2", "pytz"],
+  "ssdp": [],
+  "zeroconf": [],
+  "version": "0.2.2"
+}

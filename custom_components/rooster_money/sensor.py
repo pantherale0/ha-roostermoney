@@ -68,7 +68,6 @@ class RoosterChildLastTransactionSensor(RoosterChildEntity, SensorEntity):
         self.transaction = account.latest_transaction
 
     async def async_update(self) -> None:
-        await super().async_update()
         self.transaction = self._child.latest_transaction
 
     @property
@@ -114,7 +113,6 @@ class RoosterPotSensor(RoosterChildEntity, SensorEntity):
         self._pot_id = pot
         self._pot = [x for x in account.pots if x.pot_id == pot][0]
         super().__init__(account, session, f"{entity_id}_{pot}")
-        self._attr_should_poll = True  # forces the sensor to update
 
     @property
     def name(self) -> str:

@@ -20,6 +20,7 @@ class RoosterChildEntity(Entity):
     """Base class for Rooster Money Child Entities."""
 
     _attr_has_entity_name = True
+    _attr_should_poll = True
 
     def __init__(
         self, account: ChildAccount, session: RoosterMoney, entity_id: str
@@ -28,12 +29,6 @@ class RoosterChildEntity(Entity):
         self._session = session
         self._child: ChildAccount = account
         self._entity_id = entity_id
-        self._attr_should_poll = False if session.use_updater else True
-
-    async def async_update(self) -> bool:
-        """Update the entity data."""
-        await self._child.update()
-        return True
 
     @property
     def unique_id(self):
@@ -94,6 +89,7 @@ class RoosterFamilyEntity(Entity):
     """Base class for Rooster Family Account Entities."""
 
     _attr_has_entity_name = True
+    _attr_should_poll = True
 
     def __init__(
         self, account: FamilyAccount, session: RoosterMoney, attr: str
@@ -102,7 +98,6 @@ class RoosterFamilyEntity(Entity):
         self._session = session
         self._account: FamilyAccount = account
         self._attr = attr
-        self._attr_should_poll = False if session.use_updater else True
 
     async def async_update(self) -> bool:
         """Update the entity data."""
