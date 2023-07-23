@@ -6,13 +6,14 @@
 
 [![hacs][hacsbadge]][hacs]
 
-_Integration to integrate with Natwest Rooster Money.
+Integration to integrate with Natwest Rooster Money.
 
 **This integration will set up the following platforms.**
 
 Platform | Description
 -- | --
 `sensor` | Show basic info from the family account and all child accounts.
+`calendar` | Shows a calendar of previous and current jobs for each child account.
 
 ## Installation
 
@@ -27,6 +28,12 @@ Platform | Description
 ## Configuration is done in the UI
 
 <!---->
+
+## Future plans
+- Add `switch` platform to allow approving jobs for a child
+- Listen to events raised by `pyroostermoney`
+- Service call to add / remove money from a pot
+- Service call for advanced job actions (skip etc.)
 
 ## Contributions are welcome!
 
