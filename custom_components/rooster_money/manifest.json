@@ -7,7 +7,7 @@
   "documentation": "https://github.com/pantherale0/ha-roostermoney",
   "issue_tracker": "https://github.com/pantherale0/ha-roostermoney/issues",
   "iot_class": "cloud_polling",
-  "requirements": ["pyroostermoney==0.2.4", "pytz"],
-  "version": "0.2.4",
+  "requirements": ["pyroostermoney==0.2.5", "pytz"],
+  "version": "0.2.5",
   "integration_type": "service"
 }
