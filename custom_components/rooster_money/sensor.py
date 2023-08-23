@@ -9,9 +9,6 @@ from pyroostermoney import RoosterMoney
 from pyroostermoney.child import ChildAccount, Pot
 from pyroostermoney.family_account import FamilyAccount
 
-from homeassistant.components.rooster_money.update_coordinator import RoosterCoordinator
-from .update_coordinator import RoosterCoordinator
-
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -90,12 +87,12 @@ async def async_setup_entry(
 class RoosterChildLastTransactionSensor(RoosterChildEntity, SensorEntity):
     """A sensor for Rooster Money."""
 
-    def __init__(self, coordinator: RoosterCoordinator, idx, child_id: int) -> None:
+    def __init__(self, coordinator, idx, child_id: int) -> None:
         super().__init__(coordinator, idx, child_id, "last_transaction")
 
     @property
     def name(self) -> str:
-        return f"Last Transaction"
+        return "Last Transaction"
 
     @property
     def native_value(self) -> float:
@@ -131,7 +128,7 @@ class RoosterPotSensor(RoosterChildEntity, SensorEntity):
 
     def __init__(
         self,
-        coordinator: RoosterCoordinator,
+        coordinator,
         idx,
         child_id: int,
         pot_id: str,
@@ -177,7 +174,7 @@ class RoosterPotSensor(RoosterChildEntity, SensorEntity):
 class RoosterChildMoneySensor(RoosterChildEntity, SensorEntity):
     """A sensor for Rooster Money."""
 
-    def __init__(self, coordinator: RoosterCoordinator, idx, child_id: int) -> None:
+    def __init__(self, coordinator, idx, child_id: int) -> None:
         super().__init__(coordinator, idx, child_id, "pocket_money")
 
     @property
