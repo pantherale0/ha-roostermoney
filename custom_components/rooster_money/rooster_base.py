@@ -10,25 +10,30 @@ from pyroostermoney.family_account import FamilyAccount
 
 import homeassistant.helpers.device_registry as dr
 from homeassistant.helpers.entity import DeviceInfo, Entity
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.core import ServiceResponse
 from .const import DOMAIN
+from .update_coordinator import RoosterCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class RoosterChildEntity(Entity):
+class RoosterChildEntity(CoordinatorEntity, Entity):
     """Base class for Rooster Money Child Entities."""
 
-    _attr_has_entity_name = True
-    _attr_should_poll = True
-
     def __init__(
-        self, account: ChildAccount, session: RoosterMoney, entity_id: str
+        self, coordinator: RoosterCoordinator, idx, child_id: int, entity_id: str
     ) -> None:
         """Initialize the Rooster Money handler."""
-        self._session = session
-        self._child: ChildAccount = account
+        super().__init__(coordinator, idx)
+        self.idx = idx
+        self._child_id = child_id
         self._entity_id = entity_id
+
+    @property
+    def _child(self) -> ChildAccount:
+        """Returns the child data."""
+        return self.coordinator.rooster.get_child_account(self._child_id)
 
     @property
     def unique_id(self):
@@ -62,12 +67,14 @@ class RoosterChildEntity(Entity):
             regular_id=None,
         )
         await self._child.create_standing_order(standing_order)
+        await self.coordinator.async_refresh_request()
 
     async def async_delete_standing_order(self, regular_id: str):
         """Deletes a standing order according to its ID"""
         for regular in self._child.standing_orders:
             if regular.regular_id == regular_id:
                 await self._child.delete_standing_order(regular)
+                await self.coordinator.async_refresh_request()
                 break
 
     async def async_get_standing_orders(self) -> ServiceResponse:
@@ -98,11 +105,6 @@ class RoosterFamilyEntity(Entity):
         self._session = session
         self._account: FamilyAccount = account
         self._attr = attr
-
-    async def async_update(self) -> bool:
-        """Update the entity data."""
-        await self._account.update()
-        return True
 
     @property
     def unique_id(self):

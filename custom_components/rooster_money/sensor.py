@@ -1,5 +1,6 @@
 """Sensors for rooster money."""
 from collections.abc import Mapping
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 import logging
@@ -8,11 +9,15 @@ from pyroostermoney import RoosterMoney
 from pyroostermoney.child import ChildAccount, Pot
 from pyroostermoney.family_account import FamilyAccount
 
+from homeassistant.components.rooster_money.update_coordinator import RoosterCoordinator
+from .update_coordinator import RoosterCoordinator
+
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.typing import StateType
 
 from .const import (
     DOMAIN,
@@ -31,20 +36,42 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Rooster Money session."""
-    domain_data: RoosterMoney = hass.data[DOMAIN][config_entry.entry_id]
     # Get a list of all children in account
-    children = domain_data.children
+    children = hass.data[DOMAIN][config_entry.entry_id].rooster.children
     entities = []
     for child in children:
-        entities.append(RoosterChildMoneySensor(child, domain_data, "pocket_money"))
-        entities.append(RoosterChildLastTransactionSensor(child, domain_data))
+        entities.append(
+            RoosterChildMoneySensor(
+                coordinator=hass.data[DOMAIN][config_entry.entry_id],
+                idx=None,
+                child_id=child.user_id,
+            )
+        )
+        entities.append(
+            RoosterChildLastTransactionSensor(
+                coordinator=hass.data[DOMAIN][config_entry.entry_id],
+                idx=None,
+                child_id=child.user_id,
+            )
+        )
         for pot in child.pots:
-            entities.append(RoosterPotSensor(child, domain_data, "pot", pot.pot_id))
+            entities.append(
+                RoosterPotSensor(
+                    coordinator=hass.data[DOMAIN][config_entry.entry_id],
+                    idx=None,
+                    child_id=child.user_id,
+                    pot_id=pot.pot_id,
+                )
+            )
 
     # Create the family account entities
-    family_account = domain_data.family_account
+    family_account = hass.data[DOMAIN][config_entry.entry_id].rooster.family_account
     for attr in FAMILY_ACCOUNT_ATTR_MAP:
-        entities.append(RoosterFamilySensor(family_account, domain_data, attr))
+        entities.append(
+            RoosterFamilySensor(
+                family_account, hass.data[DOMAIN][config_entry.entry_id].rooster, attr
+            )
+        )
 
     async_add_entities(entities, True)
     platform = entity_platform.async_get_current_platform()
@@ -63,12 +90,8 @@ async def async_setup_entry(
 class RoosterChildLastTransactionSensor(RoosterChildEntity, SensorEntity):
     """A sensor for Rooster Money."""
 
-    def __init__(self, account: ChildAccount, session: RoosterMoney) -> None:
-        super().__init__(account, session, "last_transaction")
-        self.transaction = account.latest_transaction
-
-    async def async_update(self) -> None:
-        self.transaction = self._child.latest_transaction
+    def __init__(self, coordinator: RoosterCoordinator, idx, child_id: int) -> None:
+        super().__init__(coordinator, idx, child_id, "last_transaction")
 
     @property
     def name(self) -> str:
@@ -77,12 +100,12 @@ class RoosterChildLastTransactionSensor(RoosterChildEntity, SensorEntity):
     @property
     def native_value(self) -> float:
         """Returns the native value of the entity."""
-        return self.transaction.amount
+        return self._child.latest_transaction.amount
 
     @property
     def native_unit_of_measurement(self) -> str:
         """Returns the unit of measurement for this sensor."""
-        return str(self.transaction.currency.upper())
+        return str(self._child.latest_transaction.currency.upper())
 
     @property
     def suggested_display_precision(self) -> int:
@@ -96,10 +119,10 @@ class RoosterChildLastTransactionSensor(RoosterChildEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> Mapping[str, Any] | None:
         return {
-            "description": self.transaction.description,
-            "extra_description": self.transaction.extended_description,
-            "type": self.transaction.transaction_type,
-            "balance": self.transaction.new_balance,
+            "description": self._child.latest_transaction.description,
+            "extra_description": self._child.latest_transaction.extended_description,
+            "type": self._child.latest_transaction.transaction_type,
+            "balance": self._child.latest_transaction.new_balance,
         }
 
 
@@ -107,20 +130,24 @@ class RoosterPotSensor(RoosterChildEntity, SensorEntity):
     """A Rooster pot."""
 
     def __init__(
-        self, account: ChildAccount, session: RoosterMoney, entity_id: str, pot: str
+        self,
+        coordinator: RoosterCoordinator,
+        idx,
+        child_id: int,
+        pot_id: str,
     ) -> None:
-        self._attr = CHILD_ACCOUNT_ATTR_MAP.get(entity_id)
-        self._pot_id = pot
-        self._pot = [x for x in account.pots if x.pot_id == pot][0]
-        super().__init__(account, session, f"{entity_id}_{pot}")
+        super().__init__(coordinator, idx, child_id, f"{pot_id}_pot")
+        self._attr = CHILD_ACCOUNT_ATTR_MAP.get("pot")
+        self._pot_id = pot_id
+
+    @property
+    def _pot(self) -> Pot:
+        """Gets the pot."""
+        return [x for x in self._child.pots if x.pot_id == self._pot_id][0]
 
     @property
     def name(self) -> str:
         return str(self._attr.get("name")).format(pot_name=self._pot.name)
-
-    async def async_update(self) -> None:
-        _LOGGER.debug("Updating pot %s", self._pot.pot_id)
-        self._pot = [x for x in self._child.pots if x.pot_id == self._pot_id][0]
 
     @property
     def native_unit_of_measurement(self) -> str | None:
@@ -149,6 +176,9 @@ class RoosterPotSensor(RoosterChildEntity, SensorEntity):
 
 class RoosterChildMoneySensor(RoosterChildEntity, SensorEntity):
     """A sensor for Rooster Money."""
+
+    def __init__(self, coordinator: RoosterCoordinator, idx, child_id: int) -> None:
+        super().__init__(coordinator, idx, child_id, "pocket_money")
 
     @property
     def name(self) -> str:
@@ -211,3 +241,7 @@ class RoosterFamilySensor(RoosterFamilyEntity, SensorEntity):
     def suggested_display_precision(self) -> int | None:
         """Returns the display precision (2 decimal places)."""
         return self._attr_config.get("suggested_display_precision", None)
+
+    @property
+    def device_class(self) -> SensorDeviceClass | None:
+        return self._attr_config.get("device_class", None)

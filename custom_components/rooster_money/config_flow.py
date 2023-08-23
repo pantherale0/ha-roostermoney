@@ -21,7 +21,7 @@ CONFIG_SCHEMA = vol.Schema(
     {
         vol.Required("username"): str,
         vol.Required("password"): str,
-        vol.Required("use_native_updater", default=True): bool,
+        vol.Required("exclude_card_pin", default=True): bool,
         vol.Optional("update_interval", default=60): int,
     }
 )
@@ -63,8 +63,8 @@ class OptionsFlow(config_entries.OptionsFlow):
             {
                 vol.Required("username", default=entry.options["username"]): str,
                 vol.Required("password", default=entry.options["password"]): str,
-                vol.Required(
-                    "use_native_updater", default=entry.options["use_native_updater"]
+                vol.Optional(
+                    "exclude_card_pin", default=entry.options["exclude_card_pin"]
                 ): bool,
                 vol.Optional(
                     "update_interval", default=entry.options["update_interval"]

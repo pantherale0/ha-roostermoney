@@ -25,12 +25,13 @@ async def async_setup_entry(
     """Set up the Rooster Money session."""
     # Get a list of all children in account
     entities = []
-    for child in hass.data[DOMAIN][config_entry.entry_id].children:
+    for child in hass.data[DOMAIN][config_entry.entry_id].rooster.children:
         entities.append(
             ChildJobCalendar(
-                account=child,
+                coordinator=hass.data[DOMAIN][config_entry.entry_id],
+                idx=None,
+                child_id=child.user_id,
                 entity_id="jobs",
-                session=hass.data[DOMAIN][config_entry.entry_id],
             )
         )
 
@@ -49,11 +50,6 @@ def build_calendar_event(job: Job) -> CalendarEvent:
 
 class ChildJobCalendar(CalendarEntity, RoosterChildEntity):
     """A job calendar for a child"""
-
-    def __init__(
-        self, account: ChildAccount, session: RoosterMoney, entity_id: str
-    ) -> None:
-        super().__init__(account=account, session=session, entity_id=entity_id)
 
     @property
     def name(self) -> str | UndefinedType | None:

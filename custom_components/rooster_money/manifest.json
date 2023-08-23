@@ -4,10 +4,11 @@
   "codeowners": ["@pantherale0"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/pantherale0/ha-roostermoney",
-  "issue_tracker": "https://github.com/pantherale0/ha-roostermoney/issues",
+  "documentation": "https://www.home-assistant.io/integrations/rooster_money",
+  "homekit": {},
   "iot_class": "cloud_polling",
-  "requirements": ["pyroostermoney==0.2.5", "pytz"],
-  "version": "0.2.5",
-  "integration_type": "service"
+  "requirements": ["pyroostermoney==0.3.2", "pytz"],
+  "ssdp": [],
+  "zeroconf": [],
+  "version": "0.3.2"
 }

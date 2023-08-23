@@ -18,23 +18,27 @@ from homeassistant.core import (
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 
 from .const import DOMAIN
+from .update_coordinator import RoosterCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.CALENDAR]
+PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.CALENDAR, Platform.SWITCH]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Natwest Rooster Money from a config entry."""
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = RoosterMoney(
-        username=entry.data["username"],
-        password=entry.data["password"],
-        use_updater=entry.data.get("use_native_updater", True),
-        update_interval=entry.data.get("update_interval", 60),
-    )
     try:
-        await hass.data[DOMAIN][entry.entry_id].async_login()
+        rooster = await RoosterMoney.create(
+            username=entry.data["username"],
+            password=entry.data["password"],
+            remove_card_information=entry.data.get("exclude_card_pin", True),
+        )
+
+        hass.data[DOMAIN][entry.entry_id] = RoosterCoordinator(hass, rooster)
+
+        # Fetch initial data
+        await hass.data[DOMAIN][entry.entry_id].async_config_entry_first_refresh()
     except InvalidAuthError:
         raise ConfigEntryAuthFailed
     except:
