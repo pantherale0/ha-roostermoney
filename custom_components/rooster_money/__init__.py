@@ -56,27 +56,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     return unload_ok
 
-
-# class RoosterMoneyCoordinator(DataUpdateCoordinator):
-#     """The Rooster Money coordinator."""
-
-#     def __init__(self, hass: HomeAssistant, api: RoosterMoney) -> None:
-#         super().__init__(
-#             hass, _LOGGER, name="rooster_money", update_interval=timedelta(seconds=30)
-#         )
-
-#         self.api = api
-
-#     async def _async_update_data(self) -> Coroutine[Any, Any, Any]:
-#         """Fetch data from the API."""
-#         try:
-#             async with async_timeout.timeout(10):
-#                 return await self.api.request_update()
-#         except CannotConnect as err:
-#             raise ConfigEntryAuthFailed from err
-#         except Exception as err:
-#             raise UpdateFailed(f"Error communicating with api {err}")
-
-
 class CannotConnect(HomeAssistantError):
     """Error to indicate we cannot connect."""
