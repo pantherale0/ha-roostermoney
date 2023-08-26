@@ -11,6 +11,6 @@
   "requirements": ["pyroostermoney==0.3.7", "pytz"],
   "ssdp": [],
   "zeroconf": [],
-  "version": "0.3.7",
+  "version": "0.3.8",
   "integration_type": "service"
 }
