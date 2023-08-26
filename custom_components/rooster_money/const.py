@@ -62,9 +62,14 @@ ENTITY_SERVICES = {
         "function": "async_get_standing_orders",
         "required_features": None,
     },
-    "set_job_completed": {
-        "schema": {vol.Required("job_id"): int},
-        "function": "async_set_job_completed",
+    "perform_action_on_job": {
+        "schema": {vol.Required("job_id"): int, vol.Required("action"): str},
+        "function": "async_perform_action_on_job",
         "required_features": None,
     },
+    "update_allowance": {
+        "schema": {vol.Required("active"): bool, vol.Required("amount"): float},
+        "function": "async_update_allowance",
+        "required_features": None,
+    }
 }

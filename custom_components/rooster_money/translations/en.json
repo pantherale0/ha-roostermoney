@@ -1,0 +1,22 @@
+{
+    "config": {
+      "step": {
+        "user": {
+          "data": {
+            "username": "Username",
+            "password": "Password",
+            "exclude_card_pin": "Do not collect card PINs"
+          }
+        }
+      },
+      "error": {
+        "cannot_connect": "Unable to connect",
+        "invalid_auth": "Invalid username and/or password",
+        "unknown": "Unknown error"
+      },
+      "abort": {
+        "already_configured": "Already configured"
+      }
+    }
+  }
+  

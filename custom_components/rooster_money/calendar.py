@@ -1,10 +1,12 @@
 """Defines a CalendarEntity for Rooster Money job's"""
 
 import logging
-from datetime import datetime, timezone
+from dateutil import rrule as RR
+from datetime import datetime, timezone, date, timedelta
 from pyroostermoney import RoosterMoney
 
 from pyroostermoney.child import ChildAccount, Job
+from pyroostermoney.enum import JobTime, JobScheduleTypes, Weekdays
 import pytz
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.config_entries import ConfigEntry
@@ -38,14 +40,27 @@ async def async_setup_entry(
     async_add_entities(entities, True)
 
 
-def build_calendar_event(job: Job) -> CalendarEvent:
+def build_calendar_event(
+    title: str, due_date: datetime, time_of_day: JobTime, id
+) -> CalendarEvent:
     """Converts a job to a calendar event."""
-    return CalendarEvent(
-        start=pytz.utc.localize(job.due_date).date(),
-        end=pytz.utc.localize(job.due_date).date(),
-        summary=job.title,
-        uid=job.scheduled_job_id,
+    due_date = due_date.replace(tzinfo=None)
+    event = CalendarEvent(
+        start=pytz.utc.localize(due_date).date(),
+        end=pytz.utc.localize(due_date).date(),
+        summary=title,
+        uid=id,
     )
+    if time_of_day is JobTime.MORNING:
+        event.start = pytz.utc.localize(due_date).replace(hour=5, minute=0)
+        event.end = pytz.utc.localize(due_date).replace(hour=12, minute=0)
+    if time_of_day is JobTime.AFTERNOON:
+        event.start = pytz.utc.localize(due_date).replace(hour=12, minute=0)
+        event.end = pytz.utc.localize(due_date).replace(hour=17, minute=0)
+    if time_of_day is JobTime.EVENING:
+        event.start = pytz.utc.localize(due_date).replace(hour=17, minute=0)
+        event.end = pytz.utc.localize(due_date).replace(hour=21, minute=0)
+    return event
 
 
 class ChildJobCalendar(CalendarEntity, RoosterChildEntity):
@@ -59,22 +74,58 @@ class ChildJobCalendar(CalendarEntity, RoosterChildEntity):
     def event(self) -> CalendarEvent | None:
         if len(self._child.jobs) == 0:
             return None
-        else:
-            return build_calendar_event(self._child.jobs[0])
+        # get next job
+        job_id = self._child.jobs[0].master_job_id
+        jobs = list(
+            filter(
+                lambda job: job.master_job_id is job_id,
+                self.coordinator.rooster.master_job_list,
+            )
+        )
+        if len(jobs) == 0:
+            return None
+        return build_calendar_event(
+            title=jobs[0].title,
+            due_date=self._child.jobs[0].due_date,
+            time_of_day=jobs[0].time_of_day,
+            id=self._child.jobs[0].allowance_period_id,
+        )
 
     async def async_get_events(
-        self, hass: HomeAssistant, start_date: datetime, end_date: datetime
+        self,
+        hass: HomeAssistant,
+        start_date: datetime = datetime.today(),
+        end_date: datetime = datetime.today(),
     ) -> list[CalendarEvent]:
         """Returns all calendar events between a start and end date"""
-        # CURRENTLY ONLY SUPPORTS THE CURRENT WEEK
+        # add 2 weeks of padding.
+        job_start = start_date - timedelta(weeks=2)
+        job_end = end_date + timedelta(weeks=2)
         events: list[CalendarEvent] = []
-        for job in self._child.jobs:
-            _LOGGER.debug(
-                "Convert Job %s into CalendarEvent type", job.scheduled_job_id
-            )
-            event: CalendarEvent = build_calendar_event(job)
-            events.append(event)
-
+        for job in self.coordinator.rooster.master_jobs.get_child_master_job_list(
+            self._child
+        ):
+            _LOGGER.debug("Convert Job %s into CalendarEvent type", job.master_job_id)
+            # need to flatten the event(s)
+            # we also ignore anytime events and unknown events as these have no set cycle
+            if job.schedule_type is JobScheduleTypes.REPEATING:
+                for weekday in job.weekdays:
+                    # Create an event for each weekday
+                    recurrance_range = RR.rrule(
+                        RR.WEEKLY,
+                        byweekday=int(weekday),
+                        dtstart=job_start,
+                        until=job_end,
+                    )
+                    for recurrance in recurrance_range:
+                        events.append(
+                            build_calendar_event(
+                                title=job.title,
+                                due_date=recurrance,
+                                time_of_day=job.time_of_day,
+                                id=job.master_job_id,
+                            )
+                        )
         return events
 
     async def async_set_job_completed(self, job_id: int) -> None:

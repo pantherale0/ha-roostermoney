@@ -5,8 +5,7 @@
         "data": {
           "username": "Username",
           "password": "Password",
-          "update_interval": "Update interval",
-          "use_native_updater": "Use internal updater"
+          "exclude_card_pin": "Do not collect card PINs"
         }
       }
     },

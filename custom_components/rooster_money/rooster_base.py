@@ -7,6 +7,7 @@ from pyroostermoney import RoosterMoney
 from pyroostermoney.child import ChildAccount, StandingOrder
 from pyroostermoney.const import MOBILE_APP_VERSION
 from pyroostermoney.family_account import FamilyAccount
+from pyroostermoney.enum import JobActions
 
 import homeassistant.helpers.device_registry as dr
 from homeassistant.helpers.entity import DeviceInfo, Entity
@@ -29,6 +30,7 @@ class RoosterChildEntity(CoordinatorEntity, Entity):
         self.idx = idx
         self._child_id = child_id
         self._entity_id = entity_id
+        self.coordinator: RoosterCoordinator = coordinator
 
     @property
     def _child(self) -> ChildAccount:
@@ -39,10 +41,6 @@ class RoosterChildEntity(CoordinatorEntity, Entity):
     def unique_id(self):
         """Return the uniqueid of the child."""
         return f"roostermoney_{self._child.user_id}_{self._entity_id}"
-
-    @property
-    def entity_picture(self) -> str | None:
-        return self._child.profile_image
 
     @property
     def device_info(self):
@@ -90,6 +88,26 @@ class RoosterChildEntity(CoordinatorEntity, Entity):
                 for regular in self._child.standing_orders
             ]
         }
+
+    async def async_update_allowance(self, amount: float, active: bool):
+        """Updates the child allowance."""
+        await self._child.update_allowance(not active, amount)
+
+    async def async_perform_action_on_job(self, action: str, job_id: int):
+        """Performs an action on a job."""
+        action = action.upper()
+        filtered = list(
+            filter(lambda job: job.scheduled_job_id == job_id, self._child.jobs)
+        )
+        if len(filtered) == 1:
+            if action == "APPROVE":
+                await filtered[0].job_action(JobActions.APPROVE, "")
+            else:
+                raise ValueError("Invalid or not implemented action")
+        else:
+            raise ValueError("Invalid job_id")
+        await self.coordinator.async_request_refresh()
+        return True
 
 
 class RoosterFamilyEntity(Entity):

@@ -4,10 +4,16 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 import logging
+import json
 
 from pyroostermoney import RoosterMoney
 from pyroostermoney.child import ChildAccount, Pot
 from pyroostermoney.family_account import FamilyAccount
+
+from homeassistant.components.rooster_money.update_coordinator import RoosterCoordinator
+from homeassistant.components.sensor.const import SensorStateClass
+from .update_coordinator import RoosterCoordinator
+from .helpers import JobEncoder
 
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
@@ -51,6 +57,13 @@ async def async_setup_entry(
                 child_id=child.user_id,
             )
         )
+        entities.append(
+            RoosterChildJobSensor(
+                coordinator=hass.data[DOMAIN][config_entry.entry_id],
+                idx=None,
+                child_id=child.user_id,
+            )
+        )
         for pot in child.pots:
             entities.append(
                 RoosterPotSensor(
@@ -87,12 +100,12 @@ async def async_setup_entry(
 class RoosterChildLastTransactionSensor(RoosterChildEntity, SensorEntity):
     """A sensor for Rooster Money."""
 
-    def __init__(self, coordinator, idx, child_id: int) -> None:
+    def __init__(self, coordinator: RoosterCoordinator, idx, child_id: int) -> None:
         super().__init__(coordinator, idx, child_id, "last_transaction")
 
     @property
     def name(self) -> str:
-        return "Last Transaction"
+        return f"Last Transaction"
 
     @property
     def native_value(self) -> float:
@@ -128,7 +141,7 @@ class RoosterPotSensor(RoosterChildEntity, SensorEntity):
 
     def __init__(
         self,
-        coordinator,
+        coordinator: RoosterCoordinator,
         idx,
         child_id: int,
         pot_id: str,
@@ -174,7 +187,7 @@ class RoosterPotSensor(RoosterChildEntity, SensorEntity):
 class RoosterChildMoneySensor(RoosterChildEntity, SensorEntity):
     """A sensor for Rooster Money."""
 
-    def __init__(self, coordinator, idx, child_id: int) -> None:
+    def __init__(self, coordinator: RoosterCoordinator, idx, child_id: int) -> None:
         super().__init__(coordinator, idx, child_id, "pocket_money")
 
     @property
@@ -200,6 +213,45 @@ class RoosterChildMoneySensor(RoosterChildEntity, SensorEntity):
         """Returns the display precision (2 decimal places)."""
         return 2
 
+    @property
+    def entity_picture(self) -> str | None:
+        return self._child.profile_image
+
+
+class RoosterChildJobSensor(RoosterChildEntity, SensorEntity):
+    """A job sensor that contains an array of jobs for the current allowance period."""
+
+    def __init__(self, coordinator: RoosterCoordinator, idx, child_id: int) -> None:
+        super().__init__(coordinator, idx, child_id, "allowance_jobs")
+
+    @property
+    def name(self) -> str:
+        return "Current Week Jobs"
+
+    @property
+    def native_value(self) -> int:
+        return len(self._child.jobs)
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        return "Jobs(s)"
+
+    @property
+    def state_class(self) -> SensorStateClass | str | None:
+        return SensorStateClass.MEASUREMENT
+
+    @property
+    def icon(self) -> str | None:
+        return "mdi:broom"
+
+    @property
+    def extra_state_attributes(self) -> Mapping[str, Any] | None:
+        """Returns an array of jobs."""
+        return {
+            "jobs": json.dumps(self._child.jobs, cls=JobEncoder),
+            "count": len(self._child.jobs),
+        }
+
 
 class RoosterFamilySensor(RoosterFamilyEntity, SensorEntity):
     """A sensor for Rooster Money."""
@@ -218,7 +270,9 @@ class RoosterFamilySensor(RoosterFamilyEntity, SensorEntity):
         if self._type is None:
             return None
 
-        value = self._account.__dict__.get(self._attr, None)
+        # value = self._account.__dict__.get(self._attr, None)
+        value = self._account.__dict__
+        value = value.get(self._attr)
 
         if value is None:
             return None

@@ -56,15 +56,37 @@ get_standing_orders:
   target:
     entity:
       integration: rooster_money
-set_job_completed:
+perform_action_on_job:
   target:
     entity:
       integration: rooster_money
-      domain: calendar
+      domain: sensor
   fields:
+    action:
+      required: True
+      selector:
+        select:
+          options:
+            - Approve
+            - Skip
+            - Not done
     job_id:
       required: True
       selector:
         number:
-          step: 1
           mode: box
+update_allowance:
+  target:
+    entity:
+      integration: rooster_money
+      domain: sensor
+  fields:
+    amount:
+      required: True
+      selector:
+        number:
+          step: 0.1
+          unit_of_measurement: GBP
+          mode: box
+    active:
+      boolean:

@@ -36,9 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
 
         hass.data[DOMAIN][entry.entry_id] = RoosterCoordinator(hass, rooster)
-
-        # Fetch initial data
-        await hass.data[DOMAIN][entry.entry_id].async_config_entry_first_refresh()
+        # no need to fetch initial data as pyroostermoney takes care of this when we call 'create'
     except InvalidAuthError:
         raise ConfigEntryAuthFailed
     except:
@@ -55,6 +53,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok
+
 
 class CannotConnect(HomeAssistantError):
     """Error to indicate we cannot connect."""

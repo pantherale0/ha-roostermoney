@@ -84,21 +84,12 @@ class RoosterAllowanceEntity(RoosterChildEntity, SwitchEntity):
         await self._child.update_allowance(
             paused=False, amount=self._child.allowance_amount
         )
-        await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Disable regular allowance."""
         await self._child.update_allowance(
             paused=True, amount=self._child.allowance_amount
         )
-        await self.coordinator.async_request_refresh()
-
-    async def async_update_allowance(self, amount: float) -> None:
-        """Updates the regular allowance amount."""
-        await self._child.update_allowance(
-            paused=False, amount=amount
-        )
-        await self.coordinator.async_request_refresh()
 
 
 class RoosterCardEntity(RoosterChildEntity, SwitchEntity):
@@ -136,9 +127,7 @@ class RoosterCardEntity(RoosterChildEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Enable the card."""
         await self._child.card.set_card_status(True)
-        await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Disable the card."""
         await self._child.card.set_card_status(False)
-        await self.coordinator.async_request_refresh()
