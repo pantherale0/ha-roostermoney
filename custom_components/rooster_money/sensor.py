@@ -10,7 +10,6 @@ from pyroostermoney import RoosterMoney
 from pyroostermoney.child import ChildAccount, Pot
 from pyroostermoney.family_account import FamilyAccount
 
-from homeassistant.components.rooster_money.update_coordinator import RoosterCoordinator
 from homeassistant.components.sensor.const import SensorStateClass
 from .update_coordinator import RoosterCoordinator
 from .helpers import JobEncoder
