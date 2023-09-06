@@ -81,6 +81,11 @@ async def async_setup_entry(
                 family_account, hass.data[DOMAIN][config_entry.entry_id].rooster, attr
             )
         )
+    entities.append(
+        RoosterFamilyTransactionSensor(
+            family_account, hass.data[DOMAIN][config_entry.entry_id].rooster
+        )
+    )
 
     async_add_entities(entities, True)
     platform = entity_platform.async_get_current_platform()
@@ -301,3 +306,42 @@ class RoosterFamilySensor(RoosterFamilyEntity, SensorEntity):
     @property
     def device_class(self) -> SensorDeviceClass | None:
         return self._attr_config.get("device_class", None)
+
+
+class RoosterFamilyTransactionSensor(RoosterFamilyEntity, SensorEntity):
+    """A sensor for Rooster Money."""
+
+    def __init__(self, account: FamilyAccount, session: RoosterMoney) -> None:
+        super().__init__(account, session, "latest_transaction")
+
+    @property
+    def native_value(self) -> float:
+        if self._account.latest_transaction is None:
+            return 0
+        return self._account.latest_transaction["amount"]
+
+    @property
+    def suggested_display_precision(self) -> int | None:
+        """Returns the display precision (2 decimal places)."""
+        return 2
+
+    @property
+    def name(self) -> str:
+        return "Family Account Latest Transaction"
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        """Returns the unit of measurement for this sensor"""
+        return "GBP"
+
+    @property
+    def device_class(self) -> SensorDeviceClass | None:
+        return SensorDeviceClass.MONETARY
+
+    @property
+    def extra_state_attributes(self) -> Mapping[str, Any] | None:
+        return {
+            "month_transactions": self._account.current_month_transactions,
+            "type": self._account.latest_transaction["type"],
+            "reason": self._account.latest_transaction["reason"],
+        }

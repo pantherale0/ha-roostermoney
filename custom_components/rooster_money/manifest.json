@@ -11,11 +11,11 @@
   "homekit": {},
   "iot_class": "cloud_polling",
   "requirements": [
-    "pyroostermoney==0.3.7",
+    "pyroostermoney==2023.9.1",
     "pytz"
   ],
   "ssdp": [],
   "zeroconf": [],
-  "version": "0.3.9",
+  "version": "2023.9.1",
   "integration_type": "service"
 }
