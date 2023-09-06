@@ -90,3 +90,16 @@ update_allowance:
           mode: box
     active:
       boolean:
+boost_pot:
+  target:
+    entity:
+      integration: rooster_money
+      domain: sensor
+  fields:
+    amount:
+      required: True
+      selector:
+        number:
+          step: 0.01
+          unit_of_measurement: GBP
+          mode: box

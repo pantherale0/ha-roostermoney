@@ -30,7 +30,7 @@ CONFIG_SCHEMA = vol.Schema(
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
     """Validate the user input allows us to connect."""
 
-    hub = RoosterMoney(data["username"], data["password"], use_updater=False)
+    hub = RoosterMoney(data["username"], data["password"])
 
     try:
         await hub.async_login()
