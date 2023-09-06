@@ -29,15 +29,16 @@ CONFIG_SCHEMA = vol.Schema(
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
     """Validate the user input allows us to connect."""
-
-    hub = RoosterMoney(data["username"], data["password"])
-
     try:
-        await hub.async_login()
-    except InvalidAuthError:
-        raise InvalidAuth
+        await RoosterMoney.create(
+            username=data["username"],
+            password=data["password"],
+            remove_card_information=data["exclude_card_pin"],
+        )
+    except InvalidAuthError as err:
+        raise InvalidAuth from err
     except Exception as err:
-        raise CannotConnect(err)
+        raise CannotConnect from err
 
     # Return info that you want to store in the config entry.
     return {"title": "Natwest Rooster Money"}

@@ -182,6 +182,12 @@ class RoosterPotSensor(RoosterChildEntity, SensorEntity):
     def enabled(self) -> bool:
         return self._pot.enabled
 
+    async def async_boost_pot(
+        self, amount: float, description: str = "Boost from Home Assistant"
+    ):
+        """Boost a pot."""
+        await self._pot.add_to_pot(amount, description)
+
 
 class RoosterChildMoneySensor(RoosterChildEntity, SensorEntity):
     """A sensor for Rooster Money."""

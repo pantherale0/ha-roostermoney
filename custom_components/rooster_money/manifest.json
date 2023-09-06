@@ -1,16 +1,21 @@
 {
   "domain": "rooster_money",
   "name": "Natwest Rooster Money",
-  "codeowners": ["@pantherale0"],
+  "codeowners": [
+    "@pantherale0"
+  ],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/pantherale0/ha-roostermoney",
   "issue_tracker": "https://github.com/pantherale0/ha-roostermoney/issues",
   "homekit": {},
   "iot_class": "cloud_polling",
-  "requirements": ["pyroostermoney==0.3.7", "pytz"],
+  "requirements": [
+    "pyroostermoney==0.3.7",
+    "pytz"
+  ],
   "ssdp": [],
   "zeroconf": [],
-  "version": "0.3.8",
+  "version": "0.3.9",
   "integration_type": "service"
 }

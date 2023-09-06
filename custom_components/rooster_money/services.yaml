@@ -103,3 +103,8 @@ boost_pot:
           step: 0.01
           unit_of_measurement: GBP
           mode: box
+    description:
+      required: False
+      selector:
+        text:
+          multiline: False

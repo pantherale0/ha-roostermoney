@@ -71,5 +71,10 @@ ENTITY_SERVICES = {
         "schema": {vol.Required("active"): bool, vol.Required("amount"): float},
         "function": "async_update_allowance",
         "required_features": None,
-    }
+    },
+    "boost_pot": {
+        "schema": {vol.Required("amount"): float, vol.Optional("description"): str},
+        "function": "async_boost_pot",
+        "required_features": None,
+    },
 }
