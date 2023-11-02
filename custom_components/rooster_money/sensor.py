@@ -54,13 +54,6 @@ async def async_setup_entry(
                 child_id=child.user_id,
             )
         )
-        entities.append(
-            RoosterChildJobSensor(
-                coordinator=hass.data[DOMAIN][config_entry.entry_id],
-                idx=None,
-                child_id=child.user_id,
-            )
-        )
         for pot in child.pots:
             entities.append(
                 RoosterPotSensor(

@@ -18,7 +18,7 @@ from .update_coordinator import RoosterCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.CALENDAR, Platform.SWITCH]
+PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.CALENDAR, Platform.SWITCH, Platform.TODO]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
