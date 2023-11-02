@@ -28,7 +28,6 @@ class RoosterCoordinator(DataUpdateCoordinator):
         """Fetch data from the API."""
         try:
             async with async_timeout.timeout(50):
-                listening_idx = set(self.async_contexts())
                 return await self.rooster.update()
         except Exception as err:
             raise UpdateFailed from err

@@ -1,12 +1,10 @@
-"""Defines a CalendarEntity for Rooster Money job's"""
+"""Defines a CalendarEntity for Rooster Money."""
 
 import logging
 from dateutil import rrule as RR
-from datetime import datetime, timezone, date, timedelta
-from pyroostermoney import RoosterMoney
+from datetime import datetime, timedelta
 
-from pyroostermoney.child import ChildAccount, Job
-from pyroostermoney.enum import JobTime, JobScheduleTypes, Weekdays
+from pyroostermoney.enum import JobTime, JobScheduleTypes
 import pytz
 from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.config_entries import ConfigEntry
@@ -43,7 +41,7 @@ async def async_setup_entry(
 def build_calendar_event(
     title: str, due_date: datetime, time_of_day: JobTime, id
 ) -> CalendarEvent:
-    """Converts a job to a calendar event."""
+    """Convert a job to a calendar event."""
     due_date = due_date.replace(tzinfo=None)
     event = CalendarEvent(
         start=pytz.utc.localize(due_date).date(),
@@ -64,14 +62,16 @@ def build_calendar_event(
 
 
 class ChildJobCalendar(CalendarEntity, RoosterChildEntity):
-    """A job calendar for a child"""
+    """A job calendar for a child."""
 
     @property
     def name(self) -> str | UndefinedType | None:
+        """Return name of entity."""
         return "Jobs"
 
     @property
     def event(self) -> CalendarEvent | None:
+        """Return event of entity."""
         if len(self._child.jobs) == 0:
             return None
         # get next job
@@ -97,7 +97,7 @@ class ChildJobCalendar(CalendarEntity, RoosterChildEntity):
         start_date: datetime = datetime.today(),
         end_date: datetime = datetime.today(),
     ) -> list[CalendarEvent]:
-        """Returns all calendar events between a start and end date"""
+        """Return all calendar events between a start and end date."""
         # add 2 weeks of padding.
         job_start = start_date - timedelta(weeks=2)
         job_end = end_date + timedelta(weeks=2)
@@ -129,5 +129,5 @@ class ChildJobCalendar(CalendarEntity, RoosterChildEntity):
         return events
 
     async def async_set_job_completed(self, job_id: int) -> None:
-        """Sets a job as complete."""
+        """Set a job as complete."""
         return None

@@ -4,16 +4,12 @@ from __future__ import annotations
 import logging
 
 from pyroostermoney import RoosterMoney
-from pyroostermoney.child import StandingOrder
 from pyroostermoney.exceptions import InvalidAuthError
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import (
     HomeAssistant,
-    ServiceCall,
-    ServiceResponse,
-    SupportsResponse,
 )
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 
@@ -37,10 +33,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         hass.data[DOMAIN][entry.entry_id] = RoosterCoordinator(hass, rooster)
         # no need to fetch initial data as pyroostermoney takes care of this when we call 'create'
-    except InvalidAuthError:
-        raise ConfigEntryAuthFailed
-    except:
-        raise CannotConnect
+    except InvalidAuthError as err:
+        raise ConfigEntryAuthFailed from err
+    except Exception as err:
+        raise CannotConnect from err
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 

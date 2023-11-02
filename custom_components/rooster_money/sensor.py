@@ -1,13 +1,12 @@
 """Sensors for rooster money."""
 from collections.abc import Mapping
-from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 import logging
 import json
 
 from pyroostermoney import RoosterMoney
-from pyroostermoney.child import ChildAccount, Pot
+from pyroostermoney.child import Pot
 from pyroostermoney.family_account import FamilyAccount
 
 from homeassistant.components.sensor.const import SensorStateClass
@@ -19,7 +18,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import StateType
 
 from .const import (
     DOMAIN,
@@ -105,33 +103,37 @@ class RoosterChildLastTransactionSensor(RoosterChildEntity, SensorEntity):
     """A sensor for Rooster Money."""
 
     def __init__(self, coordinator: RoosterCoordinator, idx, child_id: int) -> None:
+        """Init last transaction."""
         super().__init__(coordinator, idx, child_id, "last_transaction")
 
     @property
     def name(self) -> str:
-        return f"Last Transaction"
+        """Return entity name."""
+        return "Last Transaction"
 
     @property
     def native_value(self) -> float:
-        """Returns the native value of the entity."""
+        """Return the native value."""
         return self._child.latest_transaction.amount
 
     @property
     def native_unit_of_measurement(self) -> str:
-        """Returns the unit of measurement for this sensor."""
+        """Return the unit of measurement."""
         return str(self._child.latest_transaction.currency.upper())
 
     @property
     def suggested_display_precision(self) -> int:
-        """Returns the display precision (2 decimal places)."""
+        """Return the display precision (2 decimal places)."""
         return 2
 
     @property
     def device_class(self) -> SensorDeviceClass | None:
+        """Return device class."""
         return SensorDeviceClass.MONETARY
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any] | None:
+        """Return state machine attributes."""
         return {
             "description": self._child.latest_transaction.description,
             "extra_description": self._child.latest_transaction.extended_description,
@@ -150,41 +152,49 @@ class RoosterPotSensor(RoosterChildEntity, SensorEntity):
         child_id: int,
         pot_id: str,
     ) -> None:
+        """Init pot."""
         super().__init__(coordinator, idx, child_id, f"{pot_id}_pot")
         self._attr = CHILD_ACCOUNT_ATTR_MAP.get("pot")
         self._pot_id = pot_id
 
     @property
     def _pot(self) -> Pot:
-        """Gets the pot."""
+        """Get the pot."""
         return [x for x in self._child.pots if x.pot_id == self._pot_id][0]
 
     @property
     def name(self) -> str:
+        """Get the entity name."""
         return str(self._attr.get("name")).format(pot_name=self._pot.name)
 
     @property
     def native_unit_of_measurement(self) -> str | None:
+        """Get the native unit of measurement."""
         return self._attr.get("native_unit_of_measurement")
 
     @property
     def device_class(self) -> SensorDeviceClass | None:
+        """Get the device class."""
         return self._attr.get("device_class")
 
     @property
     def native_value(self) -> Decimal:
+        """Get the native value."""
         return self._pot.value
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any] | None:
+        """Get extra state machine attributes."""
         return {"target": self._pot.target, "id": self._pot.pot_id}
 
     @property
     def entity_picture(self) -> str | None:
+        """Get entity picture."""
         return self._pot.image
 
     @property
     def enabled(self) -> bool:
+        """Get if enabled."""
         return self._pot.enabled
 
     async def async_boost_pot(
@@ -198,33 +208,37 @@ class RoosterChildMoneySensor(RoosterChildEntity, SensorEntity):
     """A sensor for Rooster Money."""
 
     def __init__(self, coordinator: RoosterCoordinator, idx, child_id: int) -> None:
+        """Init pocket money sensor."""
         super().__init__(coordinator, idx, child_id, "pocket_money")
 
     @property
     def name(self) -> str:
+        """Return entity name."""
         return "Available Pocket Money"
 
     @property
     def native_value(self) -> Decimal:
-        """Returns the native value of the entity."""
+        """Return the native value."""
         return self._child.available_pocket_money
 
     @property
     def native_unit_of_measurement(self) -> str:
-        """Returns the unit of measurement for this sensor."""
+        """Return the unit of measurement."""
         return str(self._child.currency).upper()
 
     @property
     def device_class(self) -> SensorDeviceClass | None:
+        """Return device class."""
         return SensorDeviceClass.MONETARY
 
     @property
     def suggested_display_precision(self) -> int:
-        """Returns the display precision (2 decimal places)."""
+        """Return the display precision (2 decimal places)."""
         return 2
 
     @property
     def entity_picture(self) -> str | None:
+        """Return entity picture."""
         return self._child.profile_image
 
 
@@ -232,31 +246,37 @@ class RoosterChildJobSensor(RoosterChildEntity, SensorEntity):
     """A job sensor that contains an array of jobs for the current allowance period."""
 
     def __init__(self, coordinator: RoosterCoordinator, idx, child_id: int) -> None:
+        """Init job sensor."""
         super().__init__(coordinator, idx, child_id, "allowance_jobs")
 
     @property
     def name(self) -> str:
+        """Return entity name."""
         return "Current Week Jobs"
 
     @property
     def native_value(self) -> int:
+        """Return native value."""
         return len(self._child.jobs)
 
     @property
     def native_unit_of_measurement(self) -> str | None:
+        """Return native unit of measurement."""
         return "Jobs(s)"
 
     @property
     def state_class(self) -> SensorStateClass | str | None:
+        """Return state class."""
         return SensorStateClass.MEASUREMENT
 
     @property
     def icon(self) -> str | None:
+        """Return icon."""
         return "mdi:broom"
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any] | None:
-        """Returns an array of jobs."""
+        """Return an array of jobs."""
         return {
             "jobs": json.dumps(self._child.jobs, cls=JobEncoder),
             "count": len(self._child.jobs),
@@ -269,6 +289,7 @@ class RoosterFamilySensor(RoosterFamilyEntity, SensorEntity):
     def __init__(
         self, account: FamilyAccount, session: RoosterMoney, attr: str
     ) -> None:
+        """Init family sensor entity."""
         super().__init__(account, session, attr)
         self._attr = attr
         self._attr_config: dict = FAMILY_ACCOUNT_ATTR_MAP.get(attr)
@@ -276,7 +297,7 @@ class RoosterFamilySensor(RoosterFamilyEntity, SensorEntity):
 
     @property
     def native_value(self) -> str | float | None:
-        """Returns the native value of the entity."""
+        """Return the native value."""
         if self._type is None:
             return None
 
@@ -291,20 +312,22 @@ class RoosterFamilySensor(RoosterFamilyEntity, SensorEntity):
 
     @property
     def name(self) -> str:
+        """Return name of entity."""
         return f"Family Account {self._attr_config.get('name')}"
 
     @property
     def native_unit_of_measurement(self) -> str | None:
-        """Returns the unit of measurement for this sensor"""
+        """Return the unit of measurement."""
         return self._attr_config.get("native_unit_of_measurement", None)
 
     @property
     def suggested_display_precision(self) -> int | None:
-        """Returns the display precision (2 decimal places)."""
+        """Return the display precision (2 decimal places)."""
         return self._attr_config.get("suggested_display_precision", None)
 
     @property
     def device_class(self) -> SensorDeviceClass | None:
+        """Return device class."""
         return self._attr_config.get("device_class", None)
 
 
@@ -312,34 +335,39 @@ class RoosterFamilyTransactionSensor(RoosterFamilyEntity, SensorEntity):
     """A sensor for Rooster Money."""
 
     def __init__(self, account: FamilyAccount, session: RoosterMoney) -> None:
+        """Init family transaction sensor."""
         super().__init__(account, session, "latest_transaction")
 
     @property
     def native_value(self) -> float:
+        """Return native value."""
         if self._account.latest_transaction is None:
             return 0
         return self._account.latest_transaction["amount"]
 
     @property
     def suggested_display_precision(self) -> int | None:
-        """Returns the display precision (2 decimal places)."""
+        """Return the display precision (2 decimal places)."""
         return 2
 
     @property
     def name(self) -> str:
+        """Return entity name."""
         return "Family Account Latest Transaction"
 
     @property
     def native_unit_of_measurement(self) -> str | None:
-        """Returns the unit of measurement for this sensor"""
+        """Return the unit of measurement."""
         return "GBP"
 
     @property
     def device_class(self) -> SensorDeviceClass | None:
+        """Return device class."""
         return SensorDeviceClass.MONETARY
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any] | None:
+        """Return state machine attributes."""
         return {
             "month_transactions": self._account.current_month_transactions,
             "type": self._account.latest_transaction["type"],

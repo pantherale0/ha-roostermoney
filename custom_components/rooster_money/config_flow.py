@@ -48,12 +48,13 @@ class OptionsFlow(config_entries.OptionsFlow):
     """Handle a options flow for Natwest Rooster Money."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Init options flow."""
         _LOGGER.debug(">> options.__init()__")
         self.config_entry = config_entry
         self.options = config_entry.options
 
     async def async_step_init(self, user_input=None) -> FlowResult:
-        """handle options flow."""
+        """Handle options flow."""
         _LOGGER.debug(">> options.async_step_init(%s)", user_input)
         entry = self.config_entry
         rooster = self.hass.data[DOMAIN].get(entry.entry_id, None)
