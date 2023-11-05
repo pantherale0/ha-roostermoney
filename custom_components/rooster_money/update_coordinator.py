@@ -29,5 +29,7 @@ class RoosterCoordinator(DataUpdateCoordinator):
         try:
             async with async_timeout.timeout(50):
                 return await self.rooster.update()
+        except TimeoutError:
+            raise UpdateFailed("Timeout occured during update.")
         except Exception as err:
             raise UpdateFailed from err

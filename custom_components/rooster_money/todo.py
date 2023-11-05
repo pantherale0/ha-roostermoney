@@ -57,8 +57,8 @@ def _convert_jobs_to_todo(jobs: list[Job]) -> list[TodoItem]:
     for job in jobs:
         items.append(
             TodoItem(
-                job.title,
-                job.scheduled_job_id,
+                str(job.title),
+                str(job.scheduled_job_id),
                 _convert_job_status_to_todo(job.state)
             )
         )
@@ -104,10 +104,17 @@ class RoosterJobsTodoEntity(RoosterChildEntity, TodoListEntity):
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """Update the todo item state."""
-        if item.status is TodoItemStatus.COMPLETED:
-            await self._get_job(item.uid).job_action(
-                action=JobActions.APPROVE,
-                message="Approved via Home Assistant todos"
-            )
-        else:
-            raise ValueError("Job %s is already complete for user %s.", item.uid, self._child_id)
+        int_job = None
+        for job in self._child.jobs:
+                if job.scheduled_job_id == int(item.uid):
+                    int_job = job
+                    break
+
+        if int_job:
+            if item.status == TodoItemStatus.COMPLETED:
+                await int_job.job_action(
+                    action=JobActions.APPROVE,
+                    message="Approved via Home Assistant"
+                )
+            else:
+                raise ValueError(f"Job {item.uid} is already complete for user {self._child_id}.")
