@@ -9,6 +9,7 @@ class JobEncoder(json.JSONEncoder):
     """JSON Encoder for Job types."""
 
     def default(self, o):
+        """Init Job Encoding."""
         if isinstance(o, Job):
             return {
                 "description": o.description,
@@ -39,5 +40,5 @@ class JobEncoder(json.JSONEncoder):
             return str(o)
         try:
             return json.JSONEncoder.default(self, o)
-        except:
-            raise TypeError("Unexpected type", o.__class__.__name__)
+        except Exception as err:
+            raise TypeError("Unexpected type", o.__class__.__name__) from err

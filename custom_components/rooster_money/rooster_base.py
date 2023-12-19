@@ -68,7 +68,7 @@ class RoosterChildEntity(CoordinatorEntity, Entity):
         await self.coordinator.async_refresh_request()
 
     async def async_delete_standing_order(self, regular_id: str):
-        """Deletes a standing order according to its ID"""
+        """Delete a standing order."""
         for regular in self._child.standing_orders:
             if regular.regular_id == regular_id:
                 await self._child.delete_standing_order(regular)
@@ -76,7 +76,7 @@ class RoosterChildEntity(CoordinatorEntity, Entity):
                 break
 
     async def async_get_standing_orders(self) -> ServiceResponse:
-        """Gets all standing orders."""
+        """Get all standing orders."""
         return {
             "regulars": [
                 {
@@ -90,11 +90,11 @@ class RoosterChildEntity(CoordinatorEntity, Entity):
         }
 
     async def async_update_allowance(self, amount: float, active: bool):
-        """Updates the child allowance."""
+        """Update the child allowance."""
         await self._child.update_allowance(not active, amount)
 
     async def async_perform_action_on_job(self, action: str, job_id: int):
-        """Performs an action on a job."""
+        """Perform an action on a job."""
         action = action.upper()
         filtered = list(
             filter(lambda job: job.scheduled_job_id == job_id, self._child.jobs)
