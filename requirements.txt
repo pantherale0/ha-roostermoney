@@ -1,5 +1,5 @@
 colorlog==6.8.2
 homeassistant==2023.7.3
-pip>=21.0,<24.1
+pip>=21.0,<24.3
 ruff==0.1.11
 pyroostermoney==2023.9.1
