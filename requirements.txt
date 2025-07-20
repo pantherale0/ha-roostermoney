@@ -3,3 +3,4 @@ homeassistant==2023.7.3
 pip>=21.0,<24.1
 ruff==0.1.11
 pyroostermoney==2023.9.1
+aiohttp>=3.12.14 # not directly required, pinned by Snyk to avoid a vulnerability
